@@ -72,6 +72,8 @@ elem_139682453248016:
     - vm1
     infrastructure_ComputingNode::os:
     - ubuntu-20.04.3
+    # infrastructure_ComputingNode::cpu_count:
+    # - 4
   class: infrastructure_VirtualMachine
   id: elem_139682453248016
   name: vm1
