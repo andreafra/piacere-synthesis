@@ -72,7 +72,9 @@ elem_139682453248016:
     - vm1
     infrastructure_ComputingNode::os:
     - ubuntu-20.04.3
-    # infrastructure_ComputingNode::cpu_count:
+    infrastructure_ComputingNode::memory_mb: # Keep un-commented for test!
+    - 2048
+    # infrastructure_ComputingNode::cpu_count: # Keep commented for test!
     # - 4
   class: infrastructure_VirtualMachine
   id: elem_139682453248016
