@@ -79,6 +79,26 @@ elem_139682453248016:
   class: infrastructure_VirtualMachine
   id: elem_139682453248016
   name: vm1
+# elem_139682453255555:
+#   assocs:
+#     infrastructure_ComputingNode::credentials: !!set
+#       elem_139682453247120: null
+#     infrastructure_ComputingNode::ifaces: !!set
+#       elem_139682453248272: null
+#     infrastructure_VirtualMachine::generatedFrom: !!set
+#       elem_139682453246416: null
+#   attrs:
+#     commons_DOMLElement::name:
+#     - vm2
+#     infrastructure_ComputingNode::os:
+#     - ubuntu-20.04.3
+#     infrastructure_ComputingNode::memory_mb: # Keep un-commented for test!
+#     - 2048
+#     # infrastructure_ComputingNode::cpu_count: # Keep commented for test!
+#     # - 4
+#   class: infrastructure_VirtualMachine
+#   id: elem_139682453255555
+#   name: vm2
 elem_139682453248272:
   assocs:
     infrastructure_NetworkInterface::associated: !!set
