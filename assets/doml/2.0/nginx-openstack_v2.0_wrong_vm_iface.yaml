@@ -242,6 +242,8 @@ elem_139682454814288:
     - vm1
     infrastructure_ComputingNode::os:
     - ubuntu-20.04.3
+    infrastructure_ComputingNode::memory_mb: # Keep un-commented for test!
+    - 2048
   class: infrastructure_VirtualMachine
   id: elem_139682454814288
   name: vm1
