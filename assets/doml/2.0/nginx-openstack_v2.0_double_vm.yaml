@@ -1,0 +1,385 @@
+elem_139682453244048:
+  assocs:
+    infrastructure_SecurityGroup::ifaces: !!set
+      elem_139682453248272: null
+    infrastructure_SecurityGroup::rules: !!set
+      elem_139682465716176: null
+      elem_139682467399824: null
+      elem_139682467402256: null
+      elem_139682467408848: null
+  attrs:
+    commons_DOMLElement::name:
+    - sg
+  class: infrastructure_SecurityGroup
+  id: elem_139682453244048
+  name: sg
+elem_139682453246288:
+  assocs:
+    infrastructure_InfrastructureLayer::credentials: !!set
+      elem_139682453247120: null
+    infrastructure_InfrastructureLayer::generators: !!set
+      elem_139682453246416: null
+    infrastructure_InfrastructureLayer::groups: !!set
+      elem_139682453254480: null
+    infrastructure_InfrastructureLayer::networks: !!set
+      elem_139682468739152: null
+    infrastructure_InfrastructureLayer::securityGroups: !!set
+      elem_139682453244048: null
+  attrs:
+    commons_DOMLElement::name:
+    - infra
+  class: infrastructure_InfrastructureLayer
+  id: elem_139682453246288
+  name: infra
+elem_139682453246416:
+  assocs:
+    infrastructure_VMImage::generatedVMs: !!set
+      elem_139682453248016: null
+  attrs:
+    commons_DOMLElement::name:
+    - v_img
+    infrastructure_ComputingNodeGenerator::kind:
+    - SCRIPT
+  class: infrastructure_VMImage
+  id: elem_139682453246416
+  name: v_img
+elem_139682453247120:
+  assocs: {}
+  attrs:
+    commons_DOMLElement::name:
+    - ssh_key
+    infrastructure_KeyPair::algorithm:
+    - RSA
+    infrastructure_KeyPair::bits:
+    - 4096
+    infrastructure_KeyPair::keyfile:
+    - /home/user1/.ssh/openstack.key
+    infrastructure_KeyPair::user:
+    - ubuntu
+  class: infrastructure_KeyPair
+  id: elem_139682453247120
+  name: ssh_key
+elem_139682453248016:
+  assocs:
+    infrastructure_ComputingNode::credentials: !!set
+      elem_139682453247120: null
+    infrastructure_ComputingNode::ifaces: !!set
+      elem_139682453248272: null
+    infrastructure_VirtualMachine::generatedFrom: !!set
+      elem_139682453246416: null
+  attrs:
+    commons_DOMLElement::name:
+    - vm1
+    infrastructure_ComputingNode::os:
+    - ubuntu-20.04.3
+    infrastructure_ComputingNode::memory_mb: # Keep un-commented for test!
+    - 2048
+    # infrastructure_ComputingNode::cpu_count: # Keep commented for test!
+    # - 4
+  class: infrastructure_VirtualMachine
+  id: elem_139682453248016
+  name: vm1
+elem_139682453255555:
+  assocs:
+    infrastructure_ComputingNode::credentials: !!set
+      elem_139682453247120: null
+    infrastructure_ComputingNode::ifaces: !!set
+      elem_139682453248272: null
+    infrastructure_VirtualMachine::generatedFrom: !!set
+      elem_139682453246416: null
+  attrs:
+    commons_DOMLElement::name:
+    - vm2
+    infrastructure_ComputingNode::os:
+    - ubuntu-20.04.3
+    infrastructure_ComputingNode::memory_mb: # Keep un-commented for test!
+    - 2048
+    # infrastructure_ComputingNode::cpu_count: # Keep commented for test!
+    # - 4
+  class: infrastructure_VirtualMachine
+  id: elem_139682453255555
+  name: vm2
+elem_139682453248272:
+  assocs:
+    infrastructure_NetworkInterface::associated: !!set
+      elem_139682453244048: null
+    infrastructure_NetworkInterface::belongsTo: !!set
+      elem_139682468739152: null
+  attrs:
+    commons_DOMLElement::name:
+    - i1
+    infrastructure_NetworkInterface::endPoint:
+    - 268435457
+  class: infrastructure_NetworkInterface
+  id: elem_139682453248272
+  name: i1
+elem_139682453252752:
+  assocs: {}
+  attrs:
+    commons_Property::key:
+    - source_code
+    commons_SProperty::value:
+    - /usr/share/nginx/html/index.html
+  class: commons_SProperty
+  id: elem_139682453252752
+  name: null
+elem_139682453252816:
+  assocs:
+    commons_DOMLElement::annotations: !!set
+      elem_139682453252752: null
+  attrs:
+    application_SoftwareComponent::isPersistent:
+    - false
+    commons_DOMLElement::name:
+    - nginx
+  class: application_SoftwareComponent
+  id: elem_139682453252816
+  name: nginx
+elem_139682453253200:
+  assocs:
+    concrete_ConcreteInfrastructure::providers: !!set
+      elem_139682465984400: null
+  attrs:
+    commons_DOMLElement::name:
+    - con_infra
+  class: concrete_ConcreteInfrastructure
+  id: elem_139682453253200
+  name: con_infra
+elem_139682453254480:
+  assocs:
+    infrastructure_AutoScalingGroup::deploymentNetwork: !!set
+      elem_139682468739152: null
+    infrastructure_AutoScalingGroup::machineDefinition: !!set
+      elem_139682453248016: null
+  attrs:
+    commons_DOMLElement::name:
+    - ag
+    infrastructure_AutoScalingGroup::loadBalancer:
+    - DEFAULT
+    infrastructure_AutoScalingGroup::max:
+    - 1
+    infrastructure_AutoScalingGroup::min:
+    - 1
+  class: infrastructure_AutoScalingGroup
+  id: elem_139682453254480
+  name: ag
+elem_139682454964944:
+  assocs: {}
+  attrs:
+    commons_Property::key:
+    - vm_key_name
+    commons_SProperty::value:
+    - user1
+  class: commons_SProperty
+  id: elem_139682454964944
+  name: null
+elem_139682454968848:
+  assocs: {}
+  attrs:
+    commons_Property::key:
+    - name
+    commons_SProperty::value:
+    - ubuntu-20.04.3
+  class: commons_SProperty
+  id: elem_139682454968848
+  name: null
+elem_139682454976784:
+  assocs: {}
+  attrs:
+    commons_Property::key:
+    - vm_flavor
+    commons_SProperty::value:
+    - small
+  class: commons_SProperty
+  id: elem_139682454976784
+  name: null
+elem_139682454978384:
+  assocs:
+    commons_DOMLElement::annotations: !!set
+      elem_139682454968848: null
+    concrete_VMImage::maps: !!set
+      elem_139682453246416: null
+  attrs:
+    commons_DOMLElement::name:
+    - concrete_vm_image
+  class: concrete_VMImage
+  id: elem_139682454978384
+  name: concrete_vm_image
+elem_139682454978448:
+  assocs:
+    commons_DOMLElement::annotations: !!set
+      elem_139682467066960: null
+    concrete_Network::maps: !!set
+      elem_139682468739152: null
+  attrs:
+    commons_DOMLElement::name:
+    - concrete_net
+  class: concrete_Network
+  id: elem_139682454978448
+  name: concrete_net
+elem_139682455130192:
+  assocs:
+    commons_DOMLElement::annotations: !!set
+      elem_139682454964944: null
+      elem_139682454976784: null
+      elem_139682455132112: null
+    concrete_VirtualMachine::maps: !!set
+      elem_139682453248016: null
+  attrs:
+    commons_DOMLElement::name:
+    - concrete_vm
+  class: concrete_VirtualMachine
+  id: elem_139682455130192
+  name: concrete_vm
+elem_139682455132112:
+  assocs: {}
+  attrs:
+    commons_Property::key:
+    - vm_name
+    commons_SProperty::value:
+    - nginx-host
+  class: commons_SProperty
+  id: elem_139682455132112
+  name: null
+elem_139682465716176:
+  assocs: {}
+  attrs:
+    commons_DOMLElement::name:
+    - icmp
+    infrastructure_Rule::cidr:
+    - 0.0.0.0/0
+    infrastructure_Rule::fromPort:
+    - -1
+    infrastructure_Rule::kind:
+    - EGRESS
+    infrastructure_Rule::protocol:
+    - icmp
+    infrastructure_Rule::toPort:
+    - -1
+  class: infrastructure_Rule
+  id: elem_139682465716176
+  name: icmp
+elem_139682465984400:
+  assocs:
+    concrete_RuntimeProvider::networks: !!set
+      elem_139682454978448: null
+    concrete_RuntimeProvider::vmImages: !!set
+      elem_139682454978384: null
+    concrete_RuntimeProvider::vms: !!set
+      elem_139682455130192: null
+  attrs:
+    commons_DOMLElement::name:
+    - openstack
+  class: concrete_RuntimeProvider
+  id: elem_139682465984400
+  name: openstack
+elem_139682467066960:
+  assocs: {}
+  attrs:
+    commons_Property::key:
+    - name
+    commons_SProperty::value:
+    - ostack2
+  class: commons_SProperty
+  id: elem_139682467066960
+  name: null
+elem_139682467223760:
+  assocs:
+    application_ApplicationLayer::components: !!set
+      elem_139682453252816: null
+  attrs:
+    commons_DOMLElement::name:
+    - app
+  class: application_ApplicationLayer
+  id: elem_139682467223760
+  name: app
+elem_139682467399824:
+  assocs: {}
+  attrs:
+    commons_DOMLElement::name:
+    - http
+    infrastructure_Rule::cidr:
+    - 0.0.0.0/0
+    infrastructure_Rule::fromPort:
+    - 80
+    infrastructure_Rule::kind:
+    - INGRESS
+    infrastructure_Rule::protocol:
+    - tcp
+    infrastructure_Rule::toPort:
+    - 80
+  class: infrastructure_Rule
+  id: elem_139682467399824
+  name: http
+elem_139682467402256:
+  assocs: {}
+  attrs:
+    commons_DOMLElement::name:
+    - ssh
+    infrastructure_Rule::cidr:
+    - 0.0.0.0/0
+    infrastructure_Rule::fromPort:
+    - 22
+    infrastructure_Rule::kind:
+    - INGRESS
+    infrastructure_Rule::protocol:
+    - tcp
+    infrastructure_Rule::toPort:
+    - 22
+  class: infrastructure_Rule
+  id: elem_139682467402256
+  name: ssh
+elem_139682467408848:
+  assocs: {}
+  attrs:
+    commons_DOMLElement::name:
+    - https
+    infrastructure_Rule::cidr:
+    - 0.0.0.0/0
+    infrastructure_Rule::fromPort:
+    - 443
+    infrastructure_Rule::kind:
+    - INGRESS
+    infrastructure_Rule::protocol:
+    - tcp
+    infrastructure_Rule::toPort:
+    - 443
+  class: infrastructure_Rule
+  id: elem_139682467408848
+  name: https
+elem_139682467580048:
+  assocs:
+    commons_Configuration::deployments: !!set
+      elem_139682467588752: null
+  attrs:
+    commons_DOMLElement::name:
+    - config
+  class: commons_Configuration
+  id: elem_139682467580048
+  name: config
+elem_139682467588752:
+  assocs:
+    commons_Deployment::component: !!set
+      elem_139682453252816: null
+    commons_Deployment::node: !!set
+      elem_139682453248016: null
+  attrs: {}
+  class: commons_Deployment
+  id: elem_139682467588752
+  name: null
+elem_139682468739152:
+  assocs:
+    infrastructure_Network::connectedIfaces: !!set
+      elem_139682453248272: null
+  attrs:
+    commons_DOMLElement::name:
+    - net1
+    infrastructure_Network::address_lb:
+    - 268435456
+    infrastructure_Network::address_ub:
+    - 268435711
+    infrastructure_Network::protocol:
+    - tcp/ip
+  class: infrastructure_Network
+  id: elem_139682468739152
+  name: net1
