@@ -5,7 +5,10 @@
 
 from itertools import product
 from z3 import *
-from .types import Sort as DataSort
+
+from .setup import update_unbound_elems
+from .types import Sorts as DataSort, State, IntRels
+from .requirements import init_requirements
 
 
 def Iff(a, b):
@@ -13,11 +16,13 @@ def Iff(a, b):
 
 
 def init_solver(
-    CLASSES,
-    ELEMS,
-    ASSOCS,
-    ATTRS
+    state: State
 ):
+    CLASSES = state.data.Classes
+    ELEMS = state.data.Elems
+    ASSOCS = state.data.Assocs
+    ATTRS = state.data.Attrs
+
     # Init Z3 solver
     s = Solver()
 
@@ -78,17 +83,17 @@ def init_solver(
     # enforced onto them if they belong to a certain relationship
     elem_a = Const('elem_a', elem_sort)
     for assoc_k, assoc_v in ASSOCS.items():
-        for _, ub_elem in ELEMS.items():
-            if ub_elem.unbound:
+        for ub_elem_k, ub_elem_v in ELEMS.items():
+            if ub_elem_v.unbound:
                 s.assert_and_track(
                     ForAll(
                         [elem_a],
                         Implies(
-                            assoc_rel(elem_a,  assoc_v.ref, ub_elem.ref),
-                            elem_class_fn(ub_elem.ref) == assoc_v.to_elem.ref
+                            assoc_rel(elem_a,  assoc_v.ref, ub_elem_v.ref),
+                            elem_class_fn(ub_elem_v.ref) == assoc_v.to_elem.ref
                         )
                     ),
-                    f'AssocRel_EnforceClass {assoc_k}'
+                    f'AssocRel_EnforceClass {assoc_k} {ub_elem_k}'
                 )
 
     attr_int_exist_rel = Function(
@@ -153,16 +158,48 @@ def init_solver(
                             elem_v.ref, ATTRS[attr_k].ref) == attr_v[0]
                     ), f'AttrIntValueRel {elem_k} {attr_k}')
 
-    return (
-        s,
-        DataSort(
-            class_sort,
-            elem_sort,
-            assoc_sort,
-            attr_sort),
-        elem_class_fn,
-        assoc_rel,
-        attr_int_exist_rel,
-        attr_int_exist_value_rel,
-        attr_int_value_rel,
-    )
+    state.solver = s
+    state.sorts = DataSort(
+        class_sort,
+        elem_sort,
+        assoc_sort,
+        attr_sort)
+
+    state.rels.ElemClass = elem_class_fn
+    state.rels.AssocRel = assoc_rel
+
+    state.rels.int = IntRels(attr_int_exist_rel,
+                             attr_int_exist_value_rel,
+                             attr_int_value_rel)
+
+    return state
+
+
+def solve(state: State, requirements, max_tries=8):
+    tries = 0
+    ub_elems = 0
+
+    def prepare_solver():
+        return state.apply(
+            update_unbound_elems,
+            unbound_elems=ub_elems
+        ).apply(
+            init_solver
+        ).apply(
+            requirements
+        )
+    state = prepare_solver()
+    while (
+        state.solver.check() == unsat
+    ):
+        if tries >= max_tries:
+            raise RuntimeError(
+                'Max tries limit exceeded. Could not solve the model.\nTry increasing max_tries')
+
+        tries += 1
+        ub_elems = ub_elems * 2 if ub_elems > 0 else 1
+
+        print(f'Solving again with {ub_elems} unbound elems')
+        state = prepare_solver()
+    print(f'Solved with {ub_elems} unbound elems in {tries} tries')
+    return state

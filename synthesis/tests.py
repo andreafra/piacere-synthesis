@@ -1,14 +1,14 @@
 from z3 import *
+from .types import State
 
 
-def run_tests(solver, data, data_refs):
-    CLASSES, ELEMS, ASSOCS, ATTRS = data
-    s = solver
-    (sort, elem_class_fn,
-     assoc_rel,
-     attr_int_exist_rel,
-     attr_int_exist_value_rel,
-     attr_int_value_rel) = data_refs
+def run_tests(state: State):
+    CLASSES = state.data.Classes
+    ELEMS = state.data.Elems
+    ASSOCS = state.data.Assocs
+    ATTRS = state.data.Attrs
+
+    s = state.solver
 
     # First of all, check that the model we got is actually satisfiable:
     assert s.check() == sat
@@ -22,15 +22,16 @@ def run_tests(solver, data, data_refs):
     # TEST: VirtualMachine must have only its own attribute relationship, and not others.
     # VirtualMachine DOES NOT have Attribute infrastructure_Rule::cidr
     # so we're expecting it to be unsatisfiable
-    vm = Const('vm', sort.Elem)
+    vm = Const('vm', state.sorts.Elem)
 
     z3_test_wrapper(
         ForAll(
             [vm],
             Implies(
-                elem_class_fn(
+                state.rels.ElemClass(
                     vm) == CLASSES["infrastructure_VirtualMachine"].ref,
-                attr_int_exist_rel(vm, ATTRS["infrastructure_Rule::cidr"].ref)
+                state.rels.int.AttrExistRel(
+                    vm, ATTRS["infrastructure_Rule::cidr"].ref)
             )
         ), unsat)
 
@@ -39,8 +40,8 @@ def run_tests(solver, data, data_refs):
         ForAll(
             [vm],
             Implies(
-                elem_class_fn(vm) == CLASSES["infrastructure_Rule"].ref,
-                attr_int_exist_rel(
+                state.rels.ElemClass(vm) == CLASSES["infrastructure_Rule"].ref,
+                state.rels.int.AttrExistRel(
                     vm, ATTRS["infrastructure_Rule::fromPort"].ref)
             )
         ), sat)
@@ -54,9 +55,9 @@ def run_tests(solver, data, data_refs):
         ForAll(
             [vm],
             Implies(
-                elem_class_fn(
+                state.rels.ElemClass(
                     vm) == CLASSES["infrastructure_VirtualMachine"].ref,
-                attr_int_exist_value_rel(
+                state.rels.int.AttrExistValueRel(
                     vm, ATTRS["infrastructure_ComputingNode::cpu_count"].ref)
             )
         ), unsat)
@@ -69,9 +70,9 @@ def run_tests(solver, data, data_refs):
         ForAll(
             [vm],
             Implies(
-                elem_class_fn(
+                state.rels.ElemClass(
                     vm) == CLASSES["infrastructure_VirtualMachine"].ref,
-                attr_int_exist_value_rel(
+                state.rels.int.AttrExistValueRel(
                     vm, ATTRS["infrastructure_ComputingNode::memory_mb"].ref)
             )
         ), sat)
@@ -83,9 +84,9 @@ def run_tests(solver, data, data_refs):
         ForAll(
             [vm],
             Implies(
-                elem_class_fn(
+                state.rels.ElemClass(
                     vm) == CLASSES["infrastructure_VirtualMachine"].ref,
-                attr_int_value_rel(
+                state.rels.int.AttrValueRel(
                     vm, ATTRS["infrastructure_ComputingNode::memory_mb"].ref) == 2048
             )
         ), sat)
@@ -97,9 +98,11 @@ def run_tests(solver, data, data_refs):
         ForAll(
             [vm],
             Implies(
-                elem_class_fn(
+                state.rels.ElemClass(
                     vm) == CLASSES["infrastructure_VirtualMachine"].ref,
-                attr_int_value_rel(
+                state.rels.int.AttrValueRel(
                     vm, ATTRS["infrastructure_ComputingNode::memory_mb"].ref) == 1024
             )
         ), unsat)
+
+    return state

@@ -1,72 +1,83 @@
 from z3 import *
+from .types import State
 
 
-def init_requirements(solver, data, data_refs):
-    CLASSES, ELEMS, ASSOCS, ATTRS = data
-    s = solver
-    (sort, elem_class_fn,
-     assoc_rel,
-     attr_int_exist_rel,
-     attr_int_exist_value_rel,
-     attr_int_value_rel) = data_refs
+def init_requirements(state: State):
+    CLASSES = state.data.Classes
+    ELEMS = state.data.Elems
+    ASSOCS = state.data.Assocs
+    ATTRS = state.data.Attrs
 
-    vm, iface = Consts("vm iface", sort.Elem)
+    vm, iface = Consts("vm iface", state.sorts.Elem)
 
     req_vm_iface = ForAll(
         [vm],
         Implies(
-            elem_class_fn(vm) == CLASSES["infrastructure_VirtualMachine"].ref,
+            state.rels.ElemClass(
+                vm) == CLASSES["infrastructure_VirtualMachine"].ref,
             Exists(
                 [iface],
                 And(
-                    assoc_rel(
+                    state.rels.AssocRel(
                         vm, ASSOCS["infrastructure_ComputingNode::ifaces"].ref, iface)
                 )
             )
         )
     )
-    s.assert_and_track(req_vm_iface, "vm_iface")
+    state.solver.assert_and_track(req_vm_iface, "vm_iface")
 
     memory_attr_ref = ATTRS["infrastructure_ComputingNode::memory_mb"].ref
     req_vm_cpucount = ForAll(
         [vm],
         Implies(
-            elem_class_fn(vm) == CLASSES["infrastructure_VirtualMachine"].ref,
+            state.rels.ElemClass(
+                vm) == CLASSES["infrastructure_VirtualMachine"].ref,
             And(
-                attr_int_exist_rel(vm, memory_attr_ref),
-                attr_int_exist_value_rel(vm, memory_attr_ref),
-                attr_int_value_rel(vm, memory_attr_ref) == 2048
+                state.rels.int.AttrExistRel(vm, memory_attr_ref),
+                state.rels.int.AttrExistValueRel(vm, memory_attr_ref),
+                state.rels.int.AttrValueRel(vm, memory_attr_ref) == 2048
             )
         )
     )
-    s.assert_and_track(req_vm_cpucount, "vm_memory_mb")
+    state.solver.assert_and_track(req_vm_cpucount, "vm_memory_mb")
 
     cpu_attr_ref = ATTRS["infrastructure_ComputingNode::cpu_count"].ref
     req_vm_cpucount = ForAll(
         [vm],
         Implies(
-            elem_class_fn(vm) == CLASSES["infrastructure_VirtualMachine"].ref,
+            state.rels.ElemClass(
+                vm) == CLASSES["infrastructure_VirtualMachine"].ref,
             And(
-                attr_int_exist_rel(vm, cpu_attr_ref),
-                # attr_int_exist_value_rel(vm, cpu_attr_ref),
-                attr_int_value_rel(vm, cpu_attr_ref) > 4
+                state.rels.int.AttrExistRel(vm, cpu_attr_ref),
+                # state.rels.int.AttrExistValueRel(vm, cpu_attr_ref),
+                state.rels.int.AttrValueRel(vm, cpu_attr_ref) > 4
             )
         )
     )
-    s.assert_and_track(req_vm_cpucount, "vm_cpu_count")
+    state.solver.assert_and_track(req_vm_cpucount, "vm_cpu_count")
 
     endpoint_attr_ref = ATTRS["infrastructure_NetworkInterface::endPoint"].ref
     req_iface_endpoint = ForAll(
         [iface],
         Implies(
-            elem_class_fn(
+            state.rels.ElemClass(
                 iface) == CLASSES["infrastructure_NetworkInterface"].ref,
             And(
-                attr_int_exist_rel(iface, endpoint_attr_ref),
-                # attr_int_exist_value_rel(vm, cpu_attr_ref),
-                attr_int_value_rel(iface, endpoint_attr_ref) >= 16777216
+                state.rels.int.AttrExistRel(iface, endpoint_attr_ref),
+                # state.rels.int.AttrExistValueRel(vm, cpu_attr_ref),
+                state.rels.int.AttrValueRel(
+                    iface, endpoint_attr_ref) >= 16777216
                 # 16777216 ==toIP=> 1.0.0.0 first valid IP class-A ip address
             )
         )
     )
-    s.assert_and_track(req_iface_endpoint, "vm_iface_endpoint")
+    state.solver.assert_and_track(req_iface_endpoint, "vm_iface_endpoint")
+
+    sto, iface2 = Consts('sto iface2', state.sorts.Elem)
+    req_storage = Exists(
+        [sto],
+        state.rels.ElemClass(sto) == CLASSES["infrastructure_Storage"].ref
+    )
+    state.solver.assert_and_track(req_storage, "storage_iface")
+
+    return state
