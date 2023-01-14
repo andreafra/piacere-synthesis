@@ -6,9 +6,8 @@
 from itertools import product
 from z3 import *
 
-from .setup import update_unbound_elems
-from .types import Sorts as DataSort, State, IntRels
-from .requirements import init_requirements
+from synthesis.setup import update_unbound_elems
+from synthesis.types import Sorts as DataSort, State, IntRels
 
 
 def Iff(a, b):
@@ -79,8 +78,8 @@ def init_solver(
             s.assert_and_track(stmt, f'AssocRel {e1.id} {e2.id}')
 
     # The following assertions allow us to ensure that unbound elements
-    # (that till now have not been assigned any constraint) have a class
-    # enforced onto them if they belong to a certain relationship
+    # (that till now have not been assigned any constraint) have an
+    # assigned class if they belong to a certain relationship
     elem_a = Const('elem_a', elem_sort)
     for assoc_k, assoc_v in ASSOCS.items():
         for ub_elem_k, ub_elem_v in ELEMS.items():
@@ -96,6 +95,10 @@ def init_solver(
                     f'AssocRel_EnforceClass {assoc_k} {ub_elem_k}'
                 )
 
+    # Attribute relationships
+
+    # AttrIntExistRel(Elem, Attr) -> Bool
+    # Tells us if an element has a certain attribute.
     attr_int_exist_rel = Function(
         'AttrIntExistRel', elem_sort, attr_sort, BoolSort())
     elem_a = Const('elem_a', elem_sort)
@@ -123,6 +126,8 @@ def init_solver(
             )
         ), f'AttrIntExistRel {class_k}')
 
+    # AttrIntExistValueRel(Elem, Attr) -> Bool
+    # Tells us if an element attribute has been assigned a value in the DOML
     attr_int_exist_value_rel = Function(
         'AttrIntExistValueRel', elem_sort, attr_sort, BoolSort())
     attr_a = Const('attr_a', attr_sort)
@@ -145,18 +150,33 @@ def init_solver(
                 )
             ), f'AttrIntExistValueRel {elem_k}')
 
+    # AttrIntValueRel(Elem, Attr) -> Int
     attr_int_value_rel = Function(
         'AttrIntValueRel', elem_sort, attr_sort, IntSort())
 
     for elem_k, elem_v in ELEMS.items():
         if not elem_v.unbound:
             for attr_k, attr_v in elem_v.attributes.items():
-                # print(f'{elem_k}({elem_v.name}):\n\t{attr_k}({ATTRS[attr_k].type}, {ATTRS[attr_k].multiplicity}) = {attr_v[0]}')
                 if ATTRS[attr_k].type == 'Integer' and len(attr_v) == 1:
                     s.assert_and_track((
                         attr_int_value_rel(
                             elem_v.ref, ATTRS[attr_k].ref) == attr_v[0]
                     ), f'AttrIntValueRel {elem_k} {attr_k}')
+
+    # AttrIntSynthRel(Elem, Attr) -> Bool
+    # Tells us if the value was assigned during synthesis or not,
+    # also, it should default to False
+    attr_int_synth_rel = Function(
+        'AttrIntSynthRel', elem_sort, attr_sort, BoolSort())
+
+    for elem_k, elem_v in ELEMS.items():
+        if not elem_v.unbound:
+            for attr_k, attr_v in elem_v.attributes.items():
+                if ATTRS[attr_k].type == 'Integer' and len(attr_v) == 1:
+                    s.assert_and_track((
+                        attr_int_synth_rel(
+                            elem_v.ref, ATTRS[attr_k].ref) == True
+                    ), f'AttrIntSynthRel {elem_k} {attr_k}')
 
     state.solver = s
     state.sorts = DataSort(
@@ -169,8 +189,9 @@ def init_solver(
     state.rels.AssocRel = assoc_rel
 
     state.rels.int = IntRels(attr_int_exist_rel,
-                             attr_int_exist_value_rel,
-                             attr_int_value_rel)
+                             #  attr_int_exist_value_rel,
+                             attr_int_value_rel,
+                             attr_int_synth_rel)
 
     return state
 

@@ -57,27 +57,29 @@ def check_synth_results(state: State):
     # Works only if we have unbound elems!
 
     # For each unbound variable, print the assigned values for each attribute (of type Integer)
-    print("\nUnbound Elements Classes")
-    for ub_elem_k, ub_elem_v in [(k, v) for k, v in state.data.Elems.items() if k.startswith('elem_ub_')]:
+    print("\nUnbound Elements")
+    for ub_elem_k, ub_elem_v in [(k, v) for k, v in state.data.Elems.items() if v.unbound]:
         ub_elem_class = str(model.eval(state.rels.ElemClass(ub_elem_v.ref)))
         print(f'{ub_elem_k}\t{ub_elem_class}')
         for ub_elem_attr_k, ub_elem_attr_v in state.data.Classes[ub_elem_class].attributes.items():
             if ub_elem_attr_v['type'] == 'Integer':
-                ub_value = str(model.eval(state.rels.int.AttrValueRel(
+                value = str(model.eval(state.rels.int.AttrValueRel(
                     ub_elem_v.ref, state.data.Attrs[ub_elem_attr_k].ref)))
-                print(f'\t\t{ub_elem_attr_k}\t{ub_value}')
+                synthetized = str(model.eval(state.rels.int.AttrSynthRel(
+                    ub_elem_v.ref, state.data.Attrs[ub_elem_attr_k].ref)))
+                print(f'\t\t{ub_elem_attr_k}\t{value}\t{synthetized}')
 
-    # Is vm1.ifaces = [elem_ub_0]? Should be TRUE
-    assert model.eval(state.rels.AssocRel(state.data.Elems['elem_139682454814288'].ref,
-                                          state.data.Assocs['infrastructure_ComputingNode::ifaces'].ref,
-                                          state.data.Elems['elem_ub_0'].ref))
-    print()
-
-    iface = Const('iface', state.sorts.Elem)
-
-    iface_endpoint_elems, iface_endpoint_value = parse_synthesis_result(model.eval(
-        state.rels.int.AttrValueRel(iface, state.data.Attrs["infrastructure_NetworkInterface::endPoint"].ref)))
-    print(iface_endpoint_elems, iface_endpoint_value)
-    assert iface_endpoint_value >= 16777216
+    # For each unbound variable, print the assigned values for each attribute (of type Integer)
+    print("\nExisting Elements for which an attribute has been synthetized")
+    for elem_k, elem_v in [(k, v) for k, v in state.data.Elems.items() if not v.unbound]:
+        elem_class = str(model.eval(state.rels.ElemClass(elem_v.ref)))
+        print(f'{elem_k}\t{elem_class}')
+        for elem_attr_k, elem_attr_v in state.data.Classes[elem_class].attributes.items():
+            if elem_attr_v['type'] == 'Integer':
+                value = str(model.eval(state.rels.int.AttrValueRel(
+                    elem_v.ref, state.data.Attrs[elem_attr_k].ref)))
+                synthetized = str(model.eval(state.rels.int.AttrSynthRel(
+                    elem_v.ref, state.data.Attrs[elem_attr_k].ref)))
+                print(f'\t\t{elem_attr_k}\t{value}\t{synthetized}')
 
     return state

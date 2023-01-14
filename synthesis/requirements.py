@@ -34,8 +34,9 @@ def init_requirements(state: State):
                 vm) == CLASSES["infrastructure_VirtualMachine"].ref,
             And(
                 state.rels.int.AttrExistRel(vm, memory_attr_ref),
-                state.rels.int.AttrExistValueRel(vm, memory_attr_ref),
-                state.rels.int.AttrValueRel(vm, memory_attr_ref) == 2048
+                # state.rels.int.AttrExistValueRel(vm, memory_attr_ref),
+                state.rels.int.AttrValueRel(vm, memory_attr_ref) == 2048,
+                state.rels.int.AttrSynthRel(vm, memory_attr_ref) == True
             )
         )
     )
@@ -50,7 +51,8 @@ def init_requirements(state: State):
             And(
                 state.rels.int.AttrExistRel(vm, cpu_attr_ref),
                 # state.rels.int.AttrExistValueRel(vm, cpu_attr_ref),
-                state.rels.int.AttrValueRel(vm, cpu_attr_ref) > 4
+                state.rels.int.AttrValueRel(vm, cpu_attr_ref) > 4,
+                state.rels.int.AttrSynthRel(vm, cpu_attr_ref) == True
             )
         )
     )
@@ -66,7 +68,9 @@ def init_requirements(state: State):
                 state.rels.int.AttrExistRel(iface, endpoint_attr_ref),
                 # state.rels.int.AttrExistValueRel(vm, cpu_attr_ref),
                 state.rels.int.AttrValueRel(
-                    iface, endpoint_attr_ref) >= 16777216
+                    iface, endpoint_attr_ref) >= 16777216,
+                state.rels.int.AttrSynthRel(
+                    iface, endpoint_attr_ref) == True
                 # 16777216 ==toIP=> 1.0.0.0 first valid IP class-A ip address
             )
         )

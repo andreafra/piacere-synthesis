@@ -57,8 +57,8 @@ class Data:
 @dataclass
 class IntRels:
     AttrExistRel: FuncDeclRef = None
-    AttrExistValueRel: FuncDeclRef = None
     AttrValueRel: FuncDeclRef = None
+    AttrSynthRel: FuncDeclRef = None
 
 
 @dataclass
