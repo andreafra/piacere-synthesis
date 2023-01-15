@@ -51,31 +51,31 @@ def run_tests(state: State):
     # for attribute `infrastructure_ComputingNode::cpu_count`
     # MAKE SURE THAT in the test DOML/IM.yaml every VM DOES NOT have an attribute
     # `infrastructure_ComputingNode::cpu_count`
-    # z3_test_wrapper(
-    #     ForAll(
-    #         [vm],
-    #         Implies(
-    #             state.rels.ElemClass(
-    #                 vm) == CLASSES["infrastructure_VirtualMachine"].ref,
-    #             state.rels.int.AttrExistValueRel(
-    #                 vm, ATTRS["infrastructure_ComputingNode::cpu_count"].ref)
-    #         )
-    #     ), unsat)
+    z3_test_wrapper(
+        ForAll(
+            [vm],
+            Implies(
+                state.rels.ElemClass(
+                    vm) == CLASSES["infrastructure_VirtualMachine"].ref,
+                state.rels.int.AttrExistValueRel(
+                    vm, ATTRS["infrastructure_ComputingNode::cpu_count"].ref)
+            )
+        ), unsat)
 
     # TEST: VirtualMachine must have a value specified in the DOML
     # for attribute `infrastructure_ComputingNode::memory_mb`
     # MAKE SURE THAT in the test DOML/IM.yaml every VM HAS an attribute
     # `infrastructure_ComputingNode::memory_mb`
-    # z3_test_wrapper(
-    #     ForAll(
-    #         [vm],
-    #         Implies(
-    #             state.rels.ElemClass(
-    #                 vm) == CLASSES["infrastructure_VirtualMachine"].ref,
-    #             state.rels.int.AttrExistValueRel(
-    #                 vm, ATTRS["infrastructure_ComputingNode::memory_mb"].ref)
-    #         )
-    #     ), sat)
+    z3_test_wrapper(
+        ForAll(
+            [vm],
+            Implies(
+                state.rels.ElemClass(
+                    vm) == CLASSES["infrastructure_VirtualMachine"].ref,
+                state.rels.int.AttrExistValueRel(
+                    vm, ATTRS["infrastructure_ComputingNode::memory_mb"].ref)
+            )
+        ), sat)
 
     # TEST: VirtualMachine must have a value specified in the DOML
     # for attribute `infrastructure_ComputingNode::memory_mb` and it has

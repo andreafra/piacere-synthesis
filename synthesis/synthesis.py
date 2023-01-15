@@ -1,7 +1,7 @@
 from z3 import *
 
 from synthesis.requirements import init_requirements
-from synthesis.results import parse_synthesis_result
+from termcolor import colored, cprint
 from synthesis.setup import setup
 from synthesis.solver import solve
 from synthesis.tests import run_tests
@@ -57,29 +57,44 @@ def check_synth_results(state: State):
     # Works only if we have unbound elems!
 
     # For each unbound variable, print the assigned values for each attribute (of type Integer)
-    print("\nUnbound Elements")
-    for ub_elem_k, ub_elem_v in [(k, v) for k, v in state.data.Elems.items() if v.unbound]:
-        ub_elem_class = str(model.eval(state.rels.ElemClass(ub_elem_v.ref)))
-        print(f'{ub_elem_k}\t{ub_elem_class}')
-        for ub_elem_attr_k, ub_elem_attr_v in state.data.Classes[ub_elem_class].attributes.items():
-            if ub_elem_attr_v['type'] == 'Integer':
-                value = str(model.eval(state.rels.int.AttrValueRel(
-                    ub_elem_v.ref, state.data.Attrs[ub_elem_attr_k].ref)))
-                synthetized = str(model.eval(state.rels.int.AttrSynthRel(
-                    ub_elem_v.ref, state.data.Attrs[ub_elem_attr_k].ref)))
-                print(f'\t\t{ub_elem_attr_k}\t{value}\t{synthetized}')
-
-    # For each unbound variable, print the assigned values for each attribute (of type Integer)
-    print("\nExisting Elements for which an attribute has been synthetized")
-    for elem_k, elem_v in [(k, v) for k, v in state.data.Elems.items() if not v.unbound]:
+    print("\nSynthesis Results: synthetized results have a 'True' at the end of the line")
+    for elem_k, elem_v in state.data.Elems.items():
         elem_class = str(model.eval(state.rels.ElemClass(elem_v.ref)))
-        print(f'{elem_k}\t{elem_class}')
-        for elem_attr_k, elem_attr_v in state.data.Classes[elem_class].attributes.items():
-            if elem_attr_v['type'] == 'Integer':
-                value = str(model.eval(state.rels.int.AttrValueRel(
-                    elem_v.ref, state.data.Attrs[elem_attr_k].ref)))
-                synthetized = str(model.eval(state.rels.int.AttrSynthRel(
-                    elem_v.ref, state.data.Attrs[elem_attr_k].ref)))
-                print(f'\t\t{elem_attr_k}\t{value}\t{synthetized}')
+        cprint(f'{elem_k}\t{elem_class}', "magenta")
+
+        evaluate_associations(state, model, elem_v, elem_class)
+        evaluate_attributes(state, model, elem_v, elem_class)
 
     return state
+
+
+def evaluate_associations(state, model, elem_v, elem_class):
+    for elem_dest_k, elem_dest_v in state.data.Elems.items():
+        e1 = elem_v.ref
+        e2 = elem_dest_v.ref
+        for assoc_k, _ in state.data.Classes[elem_class].associations.items():
+            assoc = state.data.Assocs[assoc_k].ref
+            if model.eval(state.rels.AssocRel(e1, assoc, e2)):
+                if elem_dest_v.unbound:
+                    elem_dest_k = colored(
+                        elem_dest_k, on_color="on_yellow")
+                _class, _assoc = assoc_k.split("::")
+                _assoc = colored(_assoc, "blue")
+                elem_dest_k = colored(elem_dest_k, "yellow")
+
+                print(f'\t\t\t{_class}::{_assoc}\t{elem_dest_k}')
+
+
+def evaluate_attributes(state, model, elem_v, elem_class):
+    for elem_attr_k, elem_attr_v in state.data.Classes[elem_class].attributes.items():
+        if elem_attr_v['type'] == 'Integer':
+            value = str(model.eval(state.rels.int.AttrValueRel(
+                elem_v.ref, state.data.Attrs[elem_attr_k].ref)))
+            synthetized = bool(str(model.eval(state.rels.int.AttrSynthRel(
+                elem_v.ref, state.data.Attrs[elem_attr_k].ref))) == "True")
+            synthetized = colored(
+                synthetized, "green" if synthetized else "red")
+            _class, _attr = elem_attr_k.split("::")
+            _attr = colored(_attr, "cyan")
+            value = colored(value, "yellow")
+            print(f'\t\t\t{_class}::{_attr}\t{value}\t{synthetized}')

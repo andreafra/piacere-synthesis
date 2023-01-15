@@ -189,7 +189,7 @@ def init_solver(
     state.rels.AssocRel = assoc_rel
 
     state.rels.int = IntRels(attr_int_exist_rel,
-                             #  attr_int_exist_value_rel,
+                             attr_int_exist_value_rel,
                              attr_int_value_rel,
                              attr_int_synth_rel)
 
