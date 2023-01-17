@@ -1,14 +1,9 @@
-import yaml
-
-from .types import Class, Elem, AssocRel, AttrRel, State
+from src.types import Class, Elem, AssocRel, AttrRel, State
 
 
-def setup(state: State, metamodel_path: str, doml_path: str):
-    print(metamodel_path, doml_path)
-    with open(metamodel_path, 'r') as mm_file:
-        mm = yaml.safe_load(mm_file)
-    with open(doml_path, 'r') as im_file:
-        im = yaml.safe_load(im_file)
+def init_data(state: State, metamodel: str, doml: str):
+    mm = metamodel
+    im = doml
 
     assert mm is not None
     assert im is not None
@@ -58,7 +53,7 @@ def setup(state: State, metamodel_path: str, doml_path: str):
             elem_v['id'],
             elem_v['name'],
             elem_v['attrs'],
-            elem_v['assocs'],
+            {k: set(v) for k, v in elem_v['assocs'].items()},
             state.data.Classes[elem_v['class']],
         )
         for elem_k, elem_v in im.items()

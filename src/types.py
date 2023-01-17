@@ -17,7 +17,7 @@ class Elem:
     id: str
     name: Optional[str]
     attributes: dict[str, dict]
-    associations: dict[str, dict]
+    associations: dict[str, set]
     eClass: Optional[Class] = None
     ref: Optional[SortRef] = None
     unbound: bool = False

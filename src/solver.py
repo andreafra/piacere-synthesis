@@ -6,8 +6,8 @@
 from itertools import product
 from z3 import *
 
-from synthesis.setup import update_unbound_elems
-from synthesis.types import Sorts as DataSort, State, IntRels
+from src.setup import update_unbound_elems
+from src.types import Sorts as DataSort, State, IntRels
 
 
 def Iff(a, b):
