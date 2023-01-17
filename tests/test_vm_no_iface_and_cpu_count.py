@@ -1,28 +1,28 @@
 import yaml
 from z3 import *
 
-from src.requirements import init_requirements
+from src.requirements import builtin_requirements
 from src.results import save_results
 from src.setup import init_data
 from src.solver import solve
 from src.types import State
+from tests.requirements_bucket import req_all_vm_have_cpu_count
+
+MM_FILE = './assets/metamodels/doml_meta_v2.0.yaml'
+IM_FILE = './assets/doml/2.0/nginx-openstack_v2.0_wrong_vm_iface.yaml'
+
+with open(MM_FILE, 'r') as mm_file:
+    mm = yaml.safe_load(mm_file)
+with open(IM_FILE, 'r') as im_file:
+    im = yaml.safe_load(im_file)
 
 
-def test_vm_missing_iface():
-
-    MM_FILE = './assets/metamodels/doml_meta_v2.0.yaml'
-    IM_FILE = './assets/doml/2.0/nginx-openstack_v2.0_wrong_vm_iface.yaml'
-
-    with open(MM_FILE, 'r') as mm_file:
-        mm = yaml.safe_load(mm_file)
-    with open(IM_FILE, 'r') as im_file:
-        im = yaml.safe_load(im_file)
-
+def test_vm_missing_iface_and_cpu_count():
     state = State()
-
     state = init_data(state, mm, im)
     original = copy.deepcopy(state)
-    state = solve(state, requirements=init_requirements)
+    state = solve(state,
+                  requirements=[builtin_requirements, req_all_vm_have_cpu_count])
     state = save_results(state)
 
     for ek, ev in original.data.Elems.items():
@@ -48,3 +48,6 @@ def test_vm_missing_iface():
         state.data.Assocs['infrastructure_SecurityGroup::ifaces'].ref,
         ub_elems[0].ref,  # iface
     ))
+    assert model.eval(state.rels.int.AttrValueRel(
+        state.data.Elems['elem_139682454814288'].ref,  # vm
+        state.data.Attrs['infrastructure_ComputingNode::cpu_count'].ref)).as_long() >= 4

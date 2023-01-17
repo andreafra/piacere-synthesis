@@ -2,7 +2,7 @@ import yaml
 
 from z3 import *
 
-from src.requirements import init_requirements
+from src.requirements import builtin_requirements
 from src.results import check_synth_results, save_results
 from src.setup import init_data
 from src.solver import solve
@@ -31,7 +31,7 @@ def main():
         doml=im,
     ).apply(
         solve,
-        requirements=init_requirements
+        requirements=[builtin_requirements]
     ).apply(
         run_tests
     ).apply(

@@ -1,7 +1,7 @@
 import yaml
 from z3 import *
 
-from src.requirements import init_requirements
+from src.requirements import builtin_requirements
 from src.results import save_results
 from src.setup import init_data
 from src.solver import solve
@@ -22,7 +22,7 @@ def test_no_synthesis():
 
     state = init_data(state, mm, im)
     original = copy.deepcopy(state)
-    state = solve(state, requirements=init_requirements)
+    state = solve(state, requirements=[builtin_requirements])
     state = save_results(state)
 
     for ek, ev in original.data.Elems.items():

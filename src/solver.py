@@ -4,6 +4,7 @@
 # which tells us if two items are in a relationship (returns true) or not.
 
 from itertools import product
+from typing import Callable
 from z3 import *
 
 from src.setup import update_unbound_elems
@@ -196,9 +197,14 @@ def init_solver(
     return state
 
 
-def solve(state: State, requirements, max_tries=8):
+def solve(state: State, requirements=list[Callable[[State], State]], max_tries=8):
     tries = 0
     ub_elems = 0
+
+    def track_requirements(state: State):
+        for req in requirements:
+            state = req(state)
+        return state
 
     def prepare_solver():
         return state.apply(
@@ -207,7 +213,7 @@ def solve(state: State, requirements, max_tries=8):
         ).apply(
             init_solver
         ).apply(
-            requirements
+            track_requirements
         )
     state = prepare_solver()
     while (
