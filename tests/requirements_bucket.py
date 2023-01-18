@@ -50,7 +50,7 @@ def req_all_iface_have_valid_ip(state: State):
     iface = Const('iface', state.sorts.Elem)
     # all ifaces must have a valid IP
     endpoint_attr_ref = state.data.Attrs["infrastructure_NetworkInterface::endPoint"].ref
-    req_iface_endpoint = ForAll(
+    stmt = ForAll(
         [iface],
         Implies(
             state.rels.ElemClass(
@@ -66,7 +66,7 @@ def req_all_iface_have_valid_ip(state: State):
             )
         )
     )
-    state.solver.assert_and_track(req_iface_endpoint, "vm_iface_endpoint")
+    state.solver.assert_and_track(stmt, "vm_iface_endpoint")
     return state
 
 
@@ -75,7 +75,7 @@ def req_all_iface_have_net(state: State):
     # all ifaces must have an associated network
     # and for easy testing let's say that the Network must not the the one in the doml
     # net1 = elem_139682454813520
-    req_iface_endpoint = ForAll(
+    stmt = ForAll(
         [iface],
         Implies(
             state.rels.ElemClass(
@@ -84,7 +84,7 @@ def req_all_iface_have_net(state: State):
                 [net],
                 And(
                     state.rels.ElemClass(
-                        net) == state.data.Classes["infrastructure_Network"].ref,
+                        net) == state.data.Classes["infrastructure_Network"].ref,  # we need this else the req fails to produce the correct output
                     state.rels.AssocRel(
                         iface, state.data.Assocs["infrastructure_NetworkInterface::belongsTo"].ref, net),
                     net != state.data.Elems['elem_139682454813520'].ref
@@ -92,18 +92,67 @@ def req_all_iface_have_net(state: State):
             )
         )
     )
-    state.solver.assert_and_track(req_iface_endpoint, "vm_iface_network")
+    state.solver.assert_and_track(stmt, "vm_iface_network")
+    return state
+
+
+def req_all_vm_have_location(state: State):
+    vm, loc = Consts('vm loc', state.sorts.Elem)
+    # all ifaces must have an associated network
+    # and for easy testing let's say that the Network must not the the one in the doml
+    # net1 = elem_139682454813520
+    stmt = ForAll(
+        [vm],
+        Implies(
+            state.rels.ElemClass(
+                vm) == state.data.Classes["infrastructure_VirtualMachine"].ref,
+            Exists(
+                [loc],
+                And(
+                    # state.rels.ElemClass(
+                    #     loc) == state.data.Classes["infrastructure_Location"].ref, # uncommenting this make the solver VERY SLOW!
+                    state.rels.AssocRel(
+                        vm, state.data.Assocs["infrastructure_ComputingNode::location"].ref, loc),
+                )
+            )
+        )
+    )
+    state.solver.assert_and_track(stmt, "vm_location")
     return state
 
 
 def req_exist_storage(state: State):
     # There must be at least 1 storage
-    sto = Consts('sto', state.sorts.Elem)
+    sto = Const('sto', state.sorts.Elem)
     req_storage = Exists(
         [sto],
         state.rels.ElemClass(
-            sto) == state.data.Classes["infrastructure_Storage"].ref
+            sto) == state.data.Classes["infrastructure_Storage"].ref,
     )
-    state.solver.assert_and_track(req_storage, "storage_iface")
+    state.solver.assert_and_track(req_storage, "req_storage")
+    return state
 
+
+def req_storage_has_iface(state: State):
+    sto, sto_iface = Consts('sto sto_iface', state.sorts.Elem)
+    req = ForAll(
+        [sto],
+        Implies(
+            And(
+
+                state.rels.ElemClass(
+                    sto) == state.data.Classes["infrastructure_Storage"].ref,
+            ),
+            Exists(
+                [sto_iface],
+                And(
+                    state.rels.ElemClass(
+                        sto_iface) == state.data.Classes["infrastructure_NetworkInterface"].ref,
+                    state.rels.AssocRel(
+                        sto, state.data.Assocs["infrastructure_Storage::ifaces"].ref, sto_iface)
+                )
+            )
+        )
+    )
+    state.solver.assert_and_track(req, "req_storage_iface")
     return state

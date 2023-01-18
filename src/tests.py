@@ -105,4 +105,6 @@ def run_tests(state: State):
             )
         ), unsat)
 
+    state.solver.check()
+
     return state

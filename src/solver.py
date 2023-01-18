@@ -81,7 +81,7 @@ def init_solver(
     # The following assertions allow us to ensure that unbound elements
     # (that till now have not been assigned any constraint) have an
     # assigned class if they belong to a certain relationship
-    elem_a = Const('elem_a', elem_sort)
+    elem_a, elem_b = Consts('elem_a elem_b', elem_sort)
     for assoc_k, assoc_v in ASSOCS.items():
         for ub_elem_k, ub_elem_v in ELEMS.items():
             if ub_elem_v.unbound:
@@ -93,8 +93,21 @@ def init_solver(
                             elem_class_fn(ub_elem_v.ref) == assoc_v.to_elem.ref
                         )
                     ),
-                    f'AssocRel_EnforceClass {assoc_k} {ub_elem_k}'
+                    f'AssocRel_EnforceClass {assoc_k} to {ub_elem_k}'
                 )
+
+                # TODO: Don't we need the opposite too??? This doesnt work. Is it bc of subclasses?
+                # s.assert_and_track(
+                #     ForAll(
+                #         [elem_b],
+                #         Implies(
+                #             assoc_rel(ub_elem_v.ref,  assoc_v.ref, elem_b),
+                #             elem_class_fn(
+                #                 ub_elem_v.ref) == assoc_v.from_elem.ref
+                #         )
+                #     ),
+                #     f'AssocRel_EnforceClass {assoc_k} from {ub_elem_k}'
+                # )
 
     # Attribute relationships
 

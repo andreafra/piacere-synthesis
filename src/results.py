@@ -7,7 +7,6 @@ from z3 import Model
 def check_synth_results(state: State):
     """Verifies some conditions and pretty prints the resulting synthesis."""
     # Make sure we have a model!
-    state.solver.check()
     model = state.solver.model()
 
     # Quick testing of synthetized values
@@ -49,11 +48,11 @@ def evaluate_associations(state, model, elem_v, elem_class):
             assoc = state.data.Assocs[assoc_k].ref
             if model.eval(state.rels.AssocRel(e1, assoc, e2)):
                 if elem_dest_v.unbound:
-                    elem_dest_k = colored(
-                        elem_dest_k, on_color="on_yellow")
+                    elem_dest_k = colored(elem_dest_k, on_color="on_yellow")
+                else:
+                    elem_dest_k = colored(elem_dest_k, "yellow")
                 _class, _assoc = assoc_k.split("::")
                 _assoc = colored(_assoc, "blue")
-                elem_dest_k = colored(elem_dest_k, "yellow")
 
                 print(f'\t\t\t{_class}::{_assoc}\t{elem_dest_k}')
 
@@ -81,6 +80,8 @@ def save_results(state: State):
     # For each unbound variable, print the assigned values for each attribute (of type Integer)
     for elem_k, elem_v in state.data.Elems.items():
         elem_class = str(model.eval(state.rels.ElemClass(elem_v.ref)))
+        if elem_v.unbound:
+            elem_v.eClass = elem_class
 
         update_associations(state, model, elem_v, elem_class)
         update_attributes(state, model, elem_v, elem_class)
