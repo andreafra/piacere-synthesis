@@ -216,6 +216,8 @@ def solve(state: State, requirements=list[Callable[[State], State]], max_tries=8
             track_requirements
         )
     state = prepare_solver()
+
+    print(f'Solving with 0 unbound elems')
     while (
         state.solver.check() == unsat
     ):

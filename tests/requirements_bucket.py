@@ -70,6 +70,32 @@ def req_all_iface_have_valid_ip(state: State):
     return state
 
 
+def req_all_iface_have_net(state: State):
+    iface, net = Consts('iface net', state.sorts.Elem)
+    # all ifaces must have an associated network
+    # and for easy testing let's say that the Network must not the the one in the doml
+    # net1 = elem_139682454813520
+    req_iface_endpoint = ForAll(
+        [iface],
+        Implies(
+            state.rels.ElemClass(
+                iface) == state.data.Classes["infrastructure_NetworkInterface"].ref,
+            Exists(
+                [net],
+                And(
+                    state.rels.ElemClass(
+                        net) == state.data.Classes["infrastructure_Network"].ref,
+                    state.rels.AssocRel(
+                        iface, state.data.Assocs["infrastructure_NetworkInterface::belongsTo"].ref, net),
+                    net != state.data.Elems['elem_139682454813520'].ref
+                )
+            )
+        )
+    )
+    state.solver.assert_and_track(req_iface_endpoint, "vm_iface_network")
+    return state
+
+
 def req_exist_storage(state: State):
     # There must be at least 1 storage
     sto = Consts('sto', state.sorts.Elem)

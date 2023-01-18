@@ -7,6 +7,9 @@ from src.setup import init_data
 from src.solver import solve
 from src.types import State
 
+# Verifies that no unbound element is produced
+# It simply tells us that the model is ok, and returns it
+
 
 def test_no_synthesis():
 

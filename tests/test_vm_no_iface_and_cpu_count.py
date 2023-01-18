@@ -16,6 +16,10 @@ with open(MM_FILE, 'r') as mm_file:
 with open(IM_FILE, 'r') as im_file:
     im = yaml.safe_load(im_file)
 
+# vm <-->
+#         iface (ub) --> cpu_count >= 4
+# sg <-->
+
 
 def test_vm_missing_iface_and_cpu_count():
     state = State()
