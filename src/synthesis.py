@@ -8,7 +8,11 @@ from src.setup import init_data
 from src.solver import solve
 from src.tests import run_tests
 from src.types import State
-from tests.requirements_bucket import req_exist_storage, req_storage_has_iface, req_all_iface_have_net
+from tests.requirements_bucket import (
+    req_exist_storage,
+    req_storage_has_iface,
+    req_all_iface_have_net,
+    req_swcomponent_is_persistent)
 
 MM_FILE = './assets/metamodels/doml_meta_v2.0.yaml'
 
@@ -32,9 +36,7 @@ def main():
         doml=im,
     ).apply(
         solve,
-        requirements=[builtin_requirements,
-                      req_exist_storage,
-                      req_storage_has_iface]
+        requirements=[builtin_requirements, req_swcomponent_is_persistent]
         # ).apply(
         #     run_tests
     ).apply(

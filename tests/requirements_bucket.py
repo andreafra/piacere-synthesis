@@ -156,3 +156,23 @@ def req_storage_has_iface(state: State):
     )
     state.solver.assert_and_track(req, "req_storage_iface")
     return state
+
+
+def req_swcomponent_is_persistent(state: State):
+    swc = Const('swc', state.sorts.Elem)
+
+    req = ForAll(
+        [swc],
+        Implies(
+            state.rels.ElemClass(
+                swc) == state.data.Classes["application_SoftwareComponent"].ref,
+            And(state.rels.bool.AttrValueRel(
+                swc, state.data.Attrs["application_SoftwareComponent::isPersistent"].ref) == True,
+                state.rels.bool.AttrSynthRel(
+                swc, state.data.Attrs["application_SoftwareComponent::isPersistent"].ref) == True,
+                )
+        )
+    )
+
+    state.solver.assert_and_track(req, "req_swc_persistent")
+    return state

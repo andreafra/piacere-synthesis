@@ -1,7 +1,7 @@
 from termcolor import colored, cprint
 
 from src.types import Elem, State
-from z3 import Model
+from z3 import Model, is_true
 
 
 def check_synth_results(state: State):
@@ -50,26 +50,39 @@ def evaluate_associations(state, model, elem_v, elem_class):
                 if elem_dest_v.unbound:
                     elem_dest_k = colored(elem_dest_k, on_color="on_yellow")
                 else:
-                    elem_dest_k = colored(elem_dest_k, "yellow")
+                    elem_dest_k = colored(elem_dest_k, "blue")
                 _class, _assoc = assoc_k.split("::")
                 _assoc = colored(_assoc, "blue")
-
-                print(f'\t\t\t{_class}::{_assoc}\t{elem_dest_k}')
+                _class_assoc = f'\t\t\t{_class}::{_assoc}'
+                print(f'{_class_assoc:<60}{elem_dest_k:<20s}')
 
 
 def evaluate_attributes(state, model, elem_v, elem_class):
     for elem_attr_k, elem_attr_v in state.data.Classes[elem_class].attributes.items():
+        value = ''
+        synthetized = False
+        _class, _attr = elem_attr_k.split("::")
+
         if elem_attr_v['type'] == 'Integer':
             value = str(model.eval(state.rels.int.AttrValueRel(
                 elem_v.ref, state.data.Attrs[elem_attr_k].ref)))
-            synthetized = bool(str(model.eval(state.rels.int.AttrSynthRel(
-                elem_v.ref, state.data.Attrs[elem_attr_k].ref))) == "True")
-            synthetized = colored(
-                synthetized, "green" if synthetized else "red")
-            _class, _attr = elem_attr_k.split("::")
-            _attr = colored(_attr, "cyan")
+            synthetized = is_true(model.eval(state.rels.int.AttrSynthRel(
+                elem_v.ref, state.data.Attrs[elem_attr_k].ref)))
             value = colored(value, "yellow")
-            print(f'\t\t\t{_class}::{_attr}\t{value}\t{synthetized}')
+            _attr = colored(_attr, "yellow")
+
+        elif elem_attr_v['type'] == 'Boolean':
+            value = is_true(model.eval(state.rels.bool.AttrValueRel(
+                elem_v.ref, state.data.Attrs[elem_attr_k].ref)))
+            synthetized = is_true(model.eval(state.rels.bool.AttrSynthRel(
+                elem_v.ref, state.data.Attrs[elem_attr_k].ref)))
+            value = colored(value, "cyan")
+            _attr = colored(_attr, "cyan")
+
+        synthetized = colored(
+            synthetized, "green" if synthetized else "red")
+        _class_attr = f'\t\t\t{_class}::{_attr}'
+        print(f'{_class_attr:<60}{value:<20s}{synthetized:<20s}')
 
 
 def save_results(state: State):
@@ -108,7 +121,14 @@ def update_attributes(state: State, model: Model, elem_v: Elem, elem_class: str)
         if elem_attr_v['type'] == 'Integer':
             value = str(model.eval(state.rels.int.AttrValueRel(
                 elem_v.ref, state.data.Attrs[elem_attr_k].ref)))
-            synthetized = bool(str(model.eval(state.rels.int.AttrSynthRel(
-                elem_v.ref, state.data.Attrs[elem_attr_k].ref))) == "True")
+            synthetized = is_true(model.eval(state.rels.int.AttrSynthRel(
+                elem_v.ref, state.data.Attrs[elem_attr_k].ref)))
             if synthetized:
                 elem_v.attributes[elem_attr_k] = [int(value)]
+        if elem_attr_v['type'] == 'Boolean':
+            value = is_true(model.eval(state.rels.bool.AttrValueRel(
+                elem_v.ref, state.data.Attrs[elem_attr_k].ref)))
+            synthetized = is_true(model.eval(state.rels.bool.AttrSynthRel(
+                elem_v.ref, state.data.Attrs[elem_attr_k].ref)))
+            if synthetized:
+                elem_v.attributes[elem_attr_k] = [value]

@@ -8,7 +8,7 @@ from typing import Callable
 from z3 import *
 
 from src.setup import update_unbound_elems
-from src.types import Sorts as DataSort, State, IntRels
+from src.types import BoolRels, Sorts as DataSort, State, IntRels
 
 
 def Iff(a, b):
@@ -47,6 +47,7 @@ def init_solver(
         ATTRS[str(attr)].ref = attr
 
     # ElemClass(Elem) -> Class
+    # TODO: Find a way to handle subclasses
     elem_class_fn = Function('ElemClass', elem_sort, class_sort)
 
     for _, elem in ELEMS.items():
@@ -110,6 +111,8 @@ def init_solver(
                 # )
 
     # Attribute relationships
+
+    # Integers
 
     # AttrIntExistRel(Elem, Attr) -> Bool
     # Tells us if an element has a certain attribute.
@@ -192,6 +195,90 @@ def init_solver(
                             elem_v.ref, ATTRS[attr_k].ref) == True
                     ), f'AttrIntSynthRel {elem_k} {attr_k}')
 
+    # Booleans
+
+    # AttrBoolExistRel(Elem, Attr) -> Bool
+    # Tells us if an element has a certain attribute.
+    attr_bool_exist_rel = Function(
+        'AttrBoolExistRel', elem_sort, attr_sort, BoolSort())
+    elem_a = Const('elem_a', elem_sort)
+    attr_a = Const('attr_a', attr_sort)
+    for class_k, class_v in CLASSES.items():
+        s.assert_and_track((
+            ForAll(
+                [elem_a],
+                Implies(
+                    elem_class_fn(elem_a) == class_v.ref,
+                    ForAll(
+                        [attr_a],
+                        Iff(
+                            attr_bool_exist_rel(elem_a, attr_a),
+                            Or(
+                                *(
+                                    attr_a == ATTRS[i].ref
+                                    for i in class_v.attributes.keys()
+                                    if ATTRS[i].type == 'Boolean'
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        ), f'AttrBoolExistRel {class_k}')
+
+    # AttrBoolExistValueRel(Elem, Attr) -> Bool
+    # Tells us if an element attribute has been assigned a value in the DOML
+    attr_bool_exist_value_rel = Function(
+        'AttrBoolExistValueRel', elem_sort, attr_sort, BoolSort())
+    attr_a = Const('attr_a', attr_sort)
+
+    for elem_k, elem_v in ELEMS.items():
+        if not elem_v.unbound:
+            s.assert_and_track((
+                ForAll(
+                    [attr_a],
+                    Iff(
+                        attr_bool_exist_value_rel(elem_v.ref, attr_a),
+                        Or(
+                            *(
+                                attr_a == ATTRS[eAttr_k].ref
+                                for eAttr_k, eAttr_v in elem_v.attributes.items()
+                                # if ATTRS[eAttr_k].type == 'Boolean' and len(eAttr_v) == 1
+                            )
+                        )
+                    )
+                )
+            ), f'AttrBoolExistValueRel {elem_k}')
+
+    # AttrBoolValueRel(Elem, Attr) -> Int
+    attr_bool_value_rel = Function(
+        'AttrBoolValueRel', elem_sort, attr_sort, BoolSort())
+
+    for elem_k, elem_v in ELEMS.items():
+        if not elem_v.unbound:
+            for attr_k, attr_v in elem_v.attributes.items():
+                if ATTRS[attr_k].type == 'Boolean' and len(attr_v) == 1:
+                    assert isinstance(attr_v[0], bool)
+                    s.assert_and_track((
+                        attr_int_value_rel(
+                            elem_v.ref, ATTRS[attr_k].ref) == attr_v[0]
+                    ), f'AttrBoolValueRel {elem_k} {attr_k}')
+
+    # AttrBoolSynthRel(Elem, Attr) -> Bool
+    # Tells us if the value was assigned during synthesis or not,
+    # also, it should default to False
+    attr_bool_synth_rel = Function(
+        'AttrBoolSynthRel', elem_sort, attr_sort, BoolSort())
+
+    for elem_k, elem_v in ELEMS.items():
+        if not elem_v.unbound:
+            for attr_k, attr_v in elem_v.attributes.items():
+                if ATTRS[attr_k].type == 'Boolean' and len(attr_v) == 1:
+                    s.assert_and_track((
+                        attr_int_synth_rel(
+                            elem_v.ref, ATTRS[attr_k].ref) == True
+                    ), f'AttrBoolSynthRel {elem_k} {attr_k}')
+
     state.solver = s
     state.sorts = DataSort(
         class_sort,
@@ -202,10 +289,17 @@ def init_solver(
     state.rels.ElemClass = elem_class_fn
     state.rels.AssocRel = assoc_rel
 
-    state.rels.int = IntRels(attr_int_exist_rel,
-                             attr_int_exist_value_rel,
-                             attr_int_value_rel,
-                             attr_int_synth_rel)
+    state.rels.int = IntRels(
+        attr_int_exist_rel,
+        attr_int_exist_value_rel,
+        attr_int_value_rel,
+        attr_int_synth_rel)
+
+    state.rels.bool = BoolRels(
+        attr_bool_exist_rel,
+        attr_bool_exist_value_rel,
+        attr_bool_value_rel,
+        attr_bool_synth_rel)
 
     return state
 

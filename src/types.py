@@ -64,7 +64,10 @@ class IntRels:
 
 @dataclass
 class BoolRels:
-    pass
+    AttrExistRel: FuncDeclRef = None
+    AttrExistValueRel: FuncDeclRef = None
+    AttrValueRel: FuncDeclRef = None
+    AttrSynthRel: FuncDeclRef = None
 
 
 @dataclass

@@ -210,8 +210,8 @@ elem_139682454812560:
     commons_DOMLElement::annotations: !!set
       elem_139682454803152: null
   attrs:
-    application_SoftwareComponent::isPersistent:
-    - false
+    # application_SoftwareComponent::isPersistent: # To allow testing on the only bool value we have 
+    # - false
     commons_DOMLElement::name:
     - nginx
   class: application_SoftwareComponent
