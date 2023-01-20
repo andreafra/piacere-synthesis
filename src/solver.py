@@ -7,8 +7,7 @@ from itertools import product
 from typing import Callable
 from z3 import *
 
-from src.setup import update_unbound_elems
-from src.types import BoolRels, Sorts as DataSort, State, IntRels
+from src.types import BoolRels, Elem, Sorts as DataSort, State, IntRels, StrRels
 
 
 def Iff(a, b):
@@ -243,14 +242,14 @@ def init_solver(
                             *(
                                 attr_a == ATTRS[eAttr_k].ref
                                 for eAttr_k, eAttr_v in elem_v.attributes.items()
-                                # if ATTRS[eAttr_k].type == 'Boolean' and len(eAttr_v) == 1
+                                if ATTRS[eAttr_k].type == 'Boolean' and len(eAttr_v) == 1
                             )
                         )
                     )
                 )
             ), f'AttrBoolExistValueRel {elem_k}')
 
-    # AttrBoolValueRel(Elem, Attr) -> Int
+    # AttrBoolValueRel(Elem, Attr) -> Bool
     attr_bool_value_rel = Function(
         'AttrBoolValueRel', elem_sort, attr_sort, BoolSort())
 
@@ -260,7 +259,7 @@ def init_solver(
                 if ATTRS[attr_k].type == 'Boolean' and len(attr_v) == 1:
                     assert isinstance(attr_v[0], bool)
                     s.assert_and_track((
-                        attr_int_value_rel(
+                        attr_bool_value_rel(
                             elem_v.ref, ATTRS[attr_k].ref) == attr_v[0]
                     ), f'AttrBoolValueRel {elem_k} {attr_k}')
 
@@ -275,16 +274,101 @@ def init_solver(
             for attr_k, attr_v in elem_v.attributes.items():
                 if ATTRS[attr_k].type == 'Boolean' and len(attr_v) == 1:
                     s.assert_and_track((
-                        attr_int_synth_rel(
+                        attr_bool_synth_rel(
                             elem_v.ref, ATTRS[attr_k].ref) == True
                     ), f'AttrBoolSynthRel {elem_k} {attr_k}')
 
+    # Strings
+
+    # AttrStrExistRel(Elem, Attr) -> Bool
+    # Tells us if an element has a certain attribute.
+    attr_str_exist_rel = Function(
+        'AttrStrExistRel', elem_sort, attr_sort, BoolSort())
+    elem_a = Const('elem_a', elem_sort)
+    attr_a = Const('attr_a', attr_sort)
+    for class_k, class_v in CLASSES.items():
+        s.assert_and_track((
+            ForAll(
+                [elem_a],
+                Implies(
+                    elem_class_fn(elem_a) == class_v.ref,
+                    ForAll(
+                        [attr_a],
+                        Iff(
+                            attr_str_exist_rel(elem_a, attr_a),
+                            Or(
+                                *(
+                                    attr_a == ATTRS[i].ref
+                                    for i in class_v.attributes.keys()
+                                    if ATTRS[i].type == 'String'
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        ), f'AttrStrExistRel {class_k}')
+
+    # AttrStrExistValueRel(Elem, Attr) -> Bool
+    # Tells us if an element attribute has been assigned a value in the DOML
+    attr_str_exist_value_rel = Function(
+        'AttrStrExistValueRel', elem_sort, attr_sort, BoolSort())
+    attr_a = Const('attr_a', attr_sort)
+
+    for elem_k, elem_v in ELEMS.items():
+        if not elem_v.unbound:
+            s.assert_and_track((
+                ForAll(
+                    [attr_a],
+                    Iff(
+                        attr_str_exist_value_rel(elem_v.ref, attr_a),
+                        Or(
+                            *(
+                                attr_a == ATTRS[eAttr_k].ref
+                                for eAttr_k, eAttr_v in elem_v.attributes.items()
+                                if ATTRS[eAttr_k].type == 'String' and len(eAttr_v) >= 1
+                            )
+                        )
+                    )
+                )
+            ), f'AttrStrExistValueRel {elem_k}')
+
+    # AttrStrValueRel(Elem, Attr) -> Str
+    assert state.sorts.String is not None
+    attr_str_value_rel = Function(
+        'AttrStrValueRel', elem_sort, attr_sort, state.sorts.String)
+
+    for elem_k, elem_v in ELEMS.items():
+        if not elem_v.unbound:
+            for attr_k, attr_v in elem_v.attributes.items():
+                if ATTRS[attr_k].type == 'String' and len(attr_v) == 1:
+                    s.assert_and_track((
+                        attr_str_value_rel(
+                            elem_v.ref, ATTRS[attr_k].ref) == state.data.Strings[attr_v[0]]
+                    ), f'AttrStrValueRel {elem_k} {attr_k}')
+
+    # AttrStrSynthRel(Elem, Attr) -> Bool
+    # Tells us if the value was assigned during synthesis or not,
+    # also, it should default to False
+    attr_str_synth_rel = Function(
+        'AttrStrSynthRel', elem_sort, attr_sort, BoolSort())
+
+    for elem_k, elem_v in ELEMS.items():
+        if not elem_v.unbound:
+            for attr_k, attr_v in elem_v.attributes.items():
+                if ATTRS[attr_k].type == 'String' and len(attr_v) == 1:
+                    s.assert_and_track((
+                        attr_str_synth_rel(
+                            elem_v.ref, ATTRS[attr_k].ref) == True
+                    ), f'AttrStrSynthRel {elem_k} {attr_k}')
+
+    # Save references
+
     state.solver = s
-    state.sorts = DataSort(
-        class_sort,
-        elem_sort,
-        assoc_sort,
-        attr_sort)
+    state.sorts.Class = class_sort
+    state.sorts.Elem = elem_sort
+    state.sorts.Assoc = assoc_sort
+    state.sorts.Attr = attr_sort
 
     state.rels.ElemClass = elem_class_fn
     state.rels.AssocRel = assoc_rel
@@ -301,10 +385,17 @@ def init_solver(
         attr_bool_value_rel,
         attr_bool_synth_rel)
 
+    state.rels.str = StrRels(
+        attr_str_exist_rel,
+        attr_str_exist_value_rel,
+        attr_str_value_rel,
+        attr_str_synth_rel
+    )
+
     return state
 
 
-def solve(state: State, requirements=list[Callable[[State], State]], max_tries=8):
+def solve(state: State, requirements: list[Callable[[State], State]] = [], strings: list[str] = [], max_tries=8):
     tries = 0
     ub_elems = 0
 
@@ -317,6 +408,9 @@ def solve(state: State, requirements=list[Callable[[State], State]], max_tries=8
         return state.apply(
             update_unbound_elems,
             unbound_elems=ub_elems
+        ).apply(
+            update_strings,
+            other_strings=strings
         ).apply(
             init_solver
         ).apply(
@@ -338,4 +432,44 @@ def solve(state: State, requirements=list[Callable[[State], State]], max_tries=8
         print(f'Solving again with {ub_elems} unbound elems')
         state = prepare_solver()
     print(f'Solved with {ub_elems} unbound elems in {tries} tries')
+    return state
+
+
+def update_strings(state: State, other_strings: list[str] = []) -> State:
+    """other_strings is an optional parameter useful if you need to pass
+    additional strings i.e. from requirements
+    """
+    doml_strings = [val for _, ev in state.data.Elems.items()
+                    for attr_k, attr_v in ev.attributes.items()
+                    for val in attr_v
+                    if state.data.Attrs[attr_k].type == 'String']
+    doml_strings += other_strings
+    unique_strings = list(set(doml_strings))
+
+    string_sort, strings_refs = EnumSort('String', list(unique_strings))
+
+    state.sorts.String = string_sort
+
+    state.data.Strings = {
+        k: v
+        for k, v in zip(unique_strings, strings_refs)
+    }
+
+    return state
+
+
+def update_unbound_elems(state: State, unbound_elems: int) -> State:
+    ub_elems = {
+        f'elem_ub_{i}': Elem(
+            f'elem_ub_{i}',
+            f'Unbound Element #{i}',
+            {},
+            {},
+            unbound=True
+        )
+        for i in range(unbound_elems)
+    }
+
+    state.data.Elems |= ub_elems
+
     return state

@@ -6,7 +6,7 @@ from src.results import save_results
 from src.setup import init_data
 from src.solver import solve
 from src.types import State
-from tests.requirements_bucket import req_all_vm_have_cpu_count, req_swcomponent_is_persistent
+from tests.requirements_bucket import req_all_vm_have_cpu_count, req_swcomponent_is_persistent, req_vm_has_size_description
 
 MM_FILE = './assets/metamodels/doml_meta_v2.0.yaml'
 IM_FILE = './assets/doml/2.0/nginx-openstack_v2.0_wrong_vm_iface.yaml'
@@ -30,7 +30,13 @@ def test_vm_missing_iface_and_cpu_count():
     state = init_data(state, mm, im)
     original = copy.deepcopy(state)
     state = solve(state,
-                  requirements=[builtin_requirements, req_all_vm_have_cpu_count, req_swcomponent_is_persistent])
+                  requirements=[
+                      builtin_requirements,
+                      req_all_vm_have_cpu_count,
+                      req_swcomponent_is_persistent,
+                      req_vm_has_size_description
+                  ],
+                  strings=["TEST"])
     state = save_results(state)
 
     for ek, ev in original.data.Elems.items():
@@ -64,3 +70,7 @@ def test_vm_missing_iface_and_cpu_count():
     assert is_true(model.eval(state.rels.bool.AttrValueRel(
         state.data.Elems['elem_139682454812560'].ref,  # sw component
         state.data.Attrs['application_SoftwareComponent::isPersistent'].ref)))
+    # Test String
+    assert (model.eval(state.rels.str.AttrValueRel(
+        state.data.Elems['elem_139682454814288'].ref,  # sw component
+        state.data.Attrs['infrastructure_VirtualMachine::sizeDescription'].ref))) == state.data.Strings["TEST"]

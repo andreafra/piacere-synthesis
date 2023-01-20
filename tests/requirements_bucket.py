@@ -176,3 +176,23 @@ def req_swcomponent_is_persistent(state: State):
 
     state.solver.assert_and_track(req, "req_swc_persistent")
     return state
+
+
+def req_vm_has_size_description(state: State):
+    vm = Const('vm', state.sorts.Elem)
+
+    req = ForAll(
+        [vm],
+        Implies(
+            state.rels.ElemClass(
+                vm) == state.data.Classes["infrastructure_VirtualMachine"].ref,
+            And(state.rels.str.AttrValueRel(
+                vm, state.data.Attrs["infrastructure_VirtualMachine::sizeDescription"].ref) == state.data.Strings["TEST"],
+                state.rels.str.AttrSynthRel(
+                vm, state.data.Attrs["infrastructure_VirtualMachine::sizeDescription"].ref) == True,
+                )
+        )
+    )
+
+    state.solver.assert_and_track(req, "req_vm_has_size_desc")
+    return state

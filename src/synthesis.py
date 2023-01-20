@@ -12,7 +12,8 @@ from tests.requirements_bucket import (
     req_exist_storage,
     req_storage_has_iface,
     req_all_iface_have_net,
-    req_swcomponent_is_persistent)
+    req_swcomponent_is_persistent,
+    req_vm_has_size_description)
 
 MM_FILE = './assets/metamodels/doml_meta_v2.0.yaml'
 
@@ -36,7 +37,8 @@ def main():
         doml=im,
     ).apply(
         solve,
-        requirements=[builtin_requirements, req_swcomponent_is_persistent]
+        requirements=[builtin_requirements, req_vm_has_size_description],
+        strings=["TEST"]
         # ).apply(
         #     run_tests
     ).apply(

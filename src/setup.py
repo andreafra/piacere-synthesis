@@ -74,20 +74,3 @@ def init_data(state: State, metamodel: str, doml: str):
     }
 
     return state
-
-
-def update_unbound_elems(state: State, unbound_elems: int) -> State:
-    ub_elems = {
-        f'elem_ub_{i}': Elem(
-            f'elem_ub_{i}',
-            f'Unbound Element #{i}',
-            {},
-            {},
-            unbound=True
-        )
-        for i in range(unbound_elems)
-    }
-
-    state.data.Elems |= ub_elems
-
-    return state

@@ -29,6 +29,7 @@ def check_synth_results(state: State):
     # Works only if we have unbound elems!
 
     # For each element, print the assigned values for each attribute and associations
+
     print("\nSynthesis Results: synthetized results have a 'True' at the end of the line")
     for elem_k, elem_v in state.data.Elems.items():
         elem_class = str(model.eval(state.rels.ElemClass(elem_v.ref)))
@@ -40,7 +41,7 @@ def check_synth_results(state: State):
     return state
 
 
-def evaluate_associations(state, model, elem_v, elem_class):
+def evaluate_associations(state: State, model: Model, elem_v: Elem, elem_class: str):
     for elem_dest_k, elem_dest_v in state.data.Elems.items():
         e1 = elem_v.ref
         e2 = elem_dest_v.ref
@@ -48,16 +49,16 @@ def evaluate_associations(state, model, elem_v, elem_class):
             assoc = state.data.Assocs[assoc_k].ref
             if model.eval(state.rels.AssocRel(e1, assoc, e2)):
                 if elem_dest_v.unbound:
-                    elem_dest_k = colored(elem_dest_k, on_color="on_yellow")
+                    elem_dest_k = colored(elem_dest_k, on_color="on_blue")
                 else:
                     elem_dest_k = colored(elem_dest_k, "blue")
                 _class, _assoc = assoc_k.split("::")
                 _assoc = colored(_assoc, "blue")
                 _class_assoc = f'\t\t\t{_class}::{_assoc}'
-                print(f'{_class_assoc:<60}{elem_dest_k:<20s}')
+                print(f'{_class_assoc:<65}{elem_dest_k:<20s}')
 
 
-def evaluate_attributes(state, model, elem_v, elem_class):
+def evaluate_attributes(state: State, model: Model, elem_v: Elem, elem_class: str):
     for elem_attr_k, elem_attr_v in state.data.Classes[elem_class].attributes.items():
         value = ''
         synthetized = False
@@ -78,11 +79,19 @@ def evaluate_attributes(state, model, elem_v, elem_class):
                 elem_v.ref, state.data.Attrs[elem_attr_k].ref)))
             value = colored(value, "cyan")
             _attr = colored(_attr, "cyan")
+        elif elem_attr_v['type'] == 'String':
+            value = model.eval(state.rels.str.AttrValueRel(
+                elem_v.ref, state.data.Attrs[elem_attr_k].ref))
+            synthetized = is_true(model.eval(state.rels.str.AttrSynthRel(
+                elem_v.ref, state.data.Attrs[elem_attr_k].ref)))
+            value = colored(value, "light_green")
+            _attr = colored(_attr, "light_green")
 
         synthetized = colored(
             synthetized, "green" if synthetized else "red")
+        synthetized = f'[{synthetized}]'
         _class_attr = f'\t\t\t{_class}::{_attr}'
-        print(f'{_class_attr:<60}{value:<20s}{synthetized:<20s}')
+        print(f'{_class_attr:<65}{synthetized:<6}\t{value}')
 
 
 def save_results(state: State):

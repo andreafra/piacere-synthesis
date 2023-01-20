@@ -1,7 +1,8 @@
 
 from dataclasses import dataclass, field
-from typing import Any, Callable, Optional, Type
-from z3 import SortRef, FuncDeclRef, DatatypeSortRef, Solver
+from typing import Callable, Optional
+
+from z3 import DatatypeRef, DatatypeSortRef, FuncDeclRef, Solver, SortRef
 
 
 @dataclass
@@ -44,6 +45,7 @@ class Sorts:
     Elem: DatatypeSortRef = None
     Assoc: DatatypeSortRef = None
     Attr: DatatypeSortRef = None
+    String: DatatypeSortRef = None
 
 
 @dataclass
@@ -52,6 +54,7 @@ class Data:
     Elems: dict[str, Elem] = field(default_factory=dict)
     Assocs: dict[str, AssocRel] = field(default_factory=dict)
     Attrs: dict[str, AttrRel] = field(default_factory=dict)
+    Strings: dict[str, DatatypeRef] = field(default_factory=dict)
 
 
 @dataclass
@@ -72,7 +75,10 @@ class BoolRels:
 
 @dataclass
 class StrRels:
-    pass
+    AttrExistRel: FuncDeclRef = None
+    AttrExistValueRel: FuncDeclRef = None
+    AttrValueRel: FuncDeclRef = None
+    AttrSynthRel: FuncDeclRef = None
 
 
 @dataclass
