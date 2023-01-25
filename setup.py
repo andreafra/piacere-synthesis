@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 
 setup(
-    name="doml-model-checker-synthesis",
+    name="doml-synthesis",
     packages=find_packages(include=['src']),
     version='1.0.0',
     description="This library allows to synthetize a new DOML from an existing one, following user-specified requirements",
