@@ -4,7 +4,7 @@ from z3 import *
 
 from src.requirements import builtin_requirements
 from src.results import check_synth_results, save_results
-from src.setup import init_data
+from src.data import init_data
 from src.solver import solve
 from src.tests import run_tests
 from src.types import State

@@ -3,7 +3,7 @@ from z3 import *
 
 from src.requirements import builtin_requirements
 from src.results import save_results
-from src.setup import init_data
+from src.data import init_data
 from src.solver import solve
 from src.types import State
 from tests.requirements_bucket import req_all_iface_have_net
