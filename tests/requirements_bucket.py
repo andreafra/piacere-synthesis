@@ -1,5 +1,5 @@
 from z3 import *
-from src.types import State
+from doml_synthesis.types import State
 
 
 def req_all_vm_have_memory_mb(state: State):

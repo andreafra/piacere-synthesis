@@ -1,5 +1,5 @@
-from z3 import *
-from src.types import State
+from z3 import And, Const, Consts, Exists, ExprRef, ForAll, Implies, Or
+from doml_synthesis.types import State
 
 
 def builtin_requirements(state: State):

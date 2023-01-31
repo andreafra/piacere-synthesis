@@ -5,9 +5,13 @@
 
 from itertools import product
 from typing import Callable
-from z3 import *
 
-from src.types import BoolRels, Elem, Sorts as DataSort, State, IntRels, StrRels
+from z3 import (BoolSort, Const, Consts, EnumSort, ForAll, Function, Implies,
+                IntSort, Or, Solver, unsat)
+
+from doml_synthesis.types import BoolRels, Elem, IntRels
+from doml_synthesis.types import Sorts as DataSort
+from doml_synthesis.types import State, StrRels
 
 
 def Iff(a, b):

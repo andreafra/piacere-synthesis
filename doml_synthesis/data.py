@@ -1,4 +1,4 @@
-from src.types import Class, Elem, AssocRel, AttrRel, State
+from doml_synthesis.types import Class, Elem, AssocRel, AttrRel, State
 
 
 def init_data(state: State, metamodel: str, doml: str):

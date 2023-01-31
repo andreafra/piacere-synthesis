@@ -1,11 +1,11 @@
 import yaml
 from z3 import *
 
-from src.requirements import builtin_requirements
-from src.results import save_results
-from src.data import init_data
-from src.solver import solve
-from src.types import State
+from doml_synthesis.requirements import builtin_requirements
+from doml_synthesis.results import save_results
+from doml_synthesis.data import init_data
+from doml_synthesis.solver import solve
+from doml_synthesis.types import State
 
 # Verifies that no unbound element is produced
 # It simply tells us that the model is ok, and returns it

@@ -1,6 +1,6 @@
 from termcolor import colored, cprint
 
-from src.types import Elem, State
+from doml_synthesis.types import Elem, State
 from z3 import Model, is_true
 
 
