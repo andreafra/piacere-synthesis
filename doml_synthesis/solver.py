@@ -436,6 +436,7 @@ def solve(state: State, requirements: list[Callable[[State], State]] = [], strin
         print(f'Solving again with {ub_elems} unbound elems')
         state = prepare_solver()
     print(f'Solved with {ub_elems} unbound elems in {tries} tries')
+    # print(state.solver.statistics())
     return state
 
 
